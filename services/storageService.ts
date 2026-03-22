@@ -141,8 +141,12 @@ export class StorageService {
 
       return medications.filter(med => {
         const startDate = new Date(med.startDate);
+        startDate.setHours(0, 0, 0, 0);
         const endDate = new Date(med.endDate);
-        return targetDate >= startDate && targetDate <= endDate;
+        endDate.setHours(23, 59, 59, 999);
+        const target = new Date(date);
+        target.setHours(12, 0, 0, 0);
+        return target >= startDate && target <= endDate;
       });
     } catch (error) {
       console.error('Error getting active medications:', error);

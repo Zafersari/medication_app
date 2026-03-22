@@ -1,10 +1,12 @@
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { NotificationService } from '../services/notificationService';
+import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 
-export default function RootLayout() {
+function StackLayout() {
+  const { colors } = useTheme();
+
   useEffect(() => {
-    // Request notification permissions on app start
     NotificationService.requestPermissions();
   }, []);
 
@@ -12,12 +14,22 @@ export default function RootLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#f5f5f5' },
+        contentStyle: { backgroundColor: colors.background },
       }}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="add-medication" />
       <Stack.Screen name="edit-medication" />
+      <Stack.Screen name="all-medications" />
+      <Stack.Screen name="calendar" />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <StackLayout />
+    </ThemeProvider>
   );
 }

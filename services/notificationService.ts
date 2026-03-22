@@ -1,11 +1,13 @@
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { Platform } from 'react-native';
 import { Medication } from '../types/medication';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -78,9 +80,9 @@ export class NotificationService {
                 priority: Notifications.AndroidNotificationPriority.HIGH,
               },
               trigger: {
+                type: SchedulableTriggerInputTypes.DATE,
                 date: scheduledDate,
-                channelId: 'medication-reminders',
-              },
+            },
             });
             notificationIds.push(notificationId);
           } catch (error) {
