@@ -54,14 +54,24 @@ export default function HomeScreen() {
       const allDoses: MedicationDose[] = [];
 
       for (const med of activeMeds) {
-        for (const time of med.times) {
+        if (med.isAsNeeded) {
           const existingDose = todayDoses.find(
-            (d) => d.medicationId === med.id && d.time === time
+            (d) => d.medicationId === med.id && d.time === 'Any Time'
           );
-          if (existingDose) {
-            allDoses.push(existingDose);
-          } else {
-            allDoses.push({
+          allDoses.push(existingDose || {
+            medicationId: med.id,
+            medicationName: med.name,
+            dosage: med.dosage,
+            time: 'Any Time',
+            date: today,
+            taken: false,
+          });
+        } else {
+          for (const time of med.times) {
+            const existingDose = todayDoses.find(
+              (d) => d.medicationId === med.id && d.time === time
+            );
+            allDoses.push(existingDose || {
               medicationId: med.id,
               medicationName: med.name,
               dosage: med.dosage,
@@ -118,6 +128,7 @@ export default function HomeScreen() {
   };
 
   const isUpcoming = (time: string): boolean => {
+    if (time === 'Any Time') return false;
     const now = new Date();
     const [hours, minutes] = time.split(':').map(Number);
     const doseTime = new Date();
@@ -191,7 +202,7 @@ export default function HomeScreen() {
               <View key={med.id} style={styles.medicationCard}>
                 <View style={styles.medicationInfo}>
                   <Text style={styles.medicationName}>{med.name}</Text>
-                  <Text style={styles.medicationDetails}>{med.dosage} • {med.times.length} times daily</Text>
+                  <Text style={styles.medicationDetails}>{med.dosage} • {med.isAsNeeded ? 'As needed' : `${med.times.length} times daily`}</Text>
                   {med.stock != null && (
                     <Text style={[
                       styles.medicationDetails,
@@ -204,7 +215,7 @@ export default function HomeScreen() {
                     </Text>
                   )}
                   <Text style={styles.medicationDates}>
-                    {new Date(med.startDate).toLocaleDateString()} - {new Date(med.endDate).toLocaleDateString()}
+                    {new Date(med.startDate).toLocaleDateString()} - {med.endDate ? new Date(med.endDate).toLocaleDateString() : 'Ongoing'}
                   </Text>
                 </View>
                 <TouchableOpacity onPress={() => router.push(`/edit-medication?id=${med.id}`)} style={styles.editButton}>

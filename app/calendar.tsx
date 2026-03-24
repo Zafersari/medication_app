@@ -40,8 +40,12 @@ export default function CalendarScreen() {
       let totalDoses = 0;
       for (const med of meds) {
         const start = new Date(med.startDate); start.setHours(0, 0, 0, 0);
-        const end = new Date(med.endDate); end.setHours(23, 59, 59, 999);
-        if (dateObj >= start && dateObj <= end) totalDoses += med.times.length;
+        if (dateObj < start) continue;
+        if (med.endDate) {
+          const end = new Date(med.endDate); end.setHours(23, 59, 59, 999);
+          if (dateObj > end) continue;
+        }
+        totalDoses += med.isAsNeeded ? 1 : med.times.length;
       }
       if (totalDoses > 0) {
         const doses = await StorageService.getDosesForDate(dateStr);
@@ -60,15 +64,22 @@ export default function CalendarScreen() {
 
     const activeMeds = medications.filter((med) => {
       const start = new Date(med.startDate); start.setHours(0, 0, 0, 0);
+      if (dateObj < start) return false;
+      if (!med.endDate) return true;
       const end = new Date(med.endDate); end.setHours(23, 59, 59, 999);
-      return dateObj >= start && dateObj <= end;
+      return dateObj <= end;
     });
 
     const allDoses: MedicationDose[] = [];
     for (const med of activeMeds) {
-      for (const time of med.times) {
-        const existing = doses.find((d) => d.medicationId === med.id && d.time === time);
-        allDoses.push(existing || { medicationId: med.id, medicationName: med.name, dosage: med.dosage, time, date: dateStr, taken: false });
+      if (med.isAsNeeded) {
+        const existing = doses.find((d) => d.medicationId === med.id && d.time === 'Any Time');
+        allDoses.push(existing || { medicationId: med.id, medicationName: med.name, dosage: med.dosage, time: 'Any Time', date: dateStr, taken: false });
+      } else {
+        for (const time of med.times) {
+          const existing = doses.find((d) => d.medicationId === med.id && d.time === time);
+          allDoses.push(existing || { medicationId: med.id, medicationName: med.name, dosage: med.dosage, time, date: dateStr, taken: false });
+        }
       }
     }
     allDoses.sort((a, b) => a.time.localeCompare(b.time));

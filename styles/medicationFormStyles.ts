@@ -82,4 +82,33 @@ export const makeStyles = (colors: ThemeColors) =>
       backgroundColor: colors.primary,
     },
     saveButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+    switchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      borderRadius: 16,
+      padding: 20,
+      width: '85%',
+      maxWidth: 400,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 16,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    modalButtonCancel: { padding: 10 },
+    modalButtonConfirm: { padding: 10 },
+    modalButtonText: { fontSize: 16 },
   });

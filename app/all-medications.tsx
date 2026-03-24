@@ -33,8 +33,10 @@ export default function AllMedicationsScreen() {
 
   const activeMeds = medications.filter((med) => {
     const start = new Date(med.startDate); start.setHours(0, 0, 0, 0);
+    if (today < start) return false;
+    if (!med.endDate) return true;
     const end = new Date(med.endDate); end.setHours(23, 59, 59, 999);
-    return today >= start && today <= end;
+    return today <= end;
   });
 
   const upcomingMeds = medications.filter((med) => {
@@ -43,6 +45,7 @@ export default function AllMedicationsScreen() {
   });
 
   const pastMeds = medications.filter((med) => {
+    if (!med.endDate) return false;
     const end = new Date(med.endDate); end.setHours(23, 59, 59, 999);
     return end < today;
   });
@@ -131,11 +134,15 @@ export default function AllMedicationsScreen() {
                     Stock: {med.stock} units{med.minStock != null && med.stock <= med.minStock ? ' ⚠️' : ''}
                   </Text>
                 )}
-                <Text style={styles.medicationDates}>{formatDate(med.startDate)} — {formatDate(med.endDate)}</Text>
+                <Text style={styles.medicationDates}>{formatDate(med.startDate)} — {med.endDate ? formatDate(med.endDate) : 'Ongoing'}</Text>
                 <View style={styles.timesRow}>
-                  {med.times.map((time, index) => (
-                    <View key={index} style={styles.timeChip}><Text style={styles.timeChipText}>{time}</Text></View>
-                  ))}
+                  {med.isAsNeeded ? (
+                    <View style={styles.timeChip}><Text style={styles.timeChipText}>As needed</Text></View>
+                  ) : (
+                    med.times.map((time, index) => (
+                      <View key={index} style={styles.timeChip}><Text style={styles.timeChipText}>{time}</Text></View>
+                    ))
+                  )}
                 </View>
               </View>
               <View style={styles.cardActions}>

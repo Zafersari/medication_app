@@ -48,11 +48,21 @@ export class NotificationService {
    */
   static async scheduleMedicationNotifications(medication: Medication): Promise<string[]> {
     const notificationIds: string[] = [];
+    if (medication.isAsNeeded) return notificationIds;
     const startDate = new Date(medication.startDate);
-    const endDate = new Date(medication.endDate);
 
-    // Calculate the number of days in the treatment
-    const daysDifference = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    // For ongoing medications, schedule up to 30 days ahead; otherwise use the end date
+    const maxDays = 30;
+    let daysDifference: number;
+    if (medication.endDate) {
+      const endDate = new Date(medication.endDate);
+      daysDifference = Math.min(
+        Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+        maxDays
+      );
+    } else {
+      daysDifference = maxDays;
+    }
 
     for (let day = 0; day <= daysDifference; day++) {
       const currentDate = new Date(startDate);

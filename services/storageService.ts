@@ -108,6 +108,8 @@ export class StorageService {
         d => d.medicationId === medicationId && d.time === time
       );
 
+      const previousTakenState = doseIndex !== -1 ? doses[doseIndex].taken : false;
+
       if (doseIndex !== -1) {
         doses[doseIndex].taken = taken;
       } else {
@@ -127,8 +129,9 @@ export class StorageService {
 
       await AsyncStorage.setItem(key, JSON.stringify(doses));
 
-      // Decrease stock when marking as taken (not when unmarking)
-      if (taken) {
+      // Update stock based on the state change
+      if (!previousTakenState && taken) {
+        // Changing from untaken to taken: decrease stock
         const medication = await this.getMedicationById(medicationId);
         if (medication && medication.stock != null) {
           const newStock = Math.max(0, medication.stock - 1);
@@ -136,6 +139,12 @@ export class StorageService {
           if (medication.minStock != null && newStock <= medication.minStock) {
             await NotificationService.scheduleLowStockNotification(medication.name, newStock);
           }
+        }
+      } else if (previousTakenState && !taken) {
+        // Changing from taken to untaken: restore stock
+        const medication = await this.getMedicationById(medicationId);
+        if (medication && medication.stock != null) {
+          await this.updateMedication({ ...medication, stock: medication.stock + 1 });
         }
       }
     } catch (error) {
@@ -155,11 +164,13 @@ export class StorageService {
       return medications.filter(med => {
         const startDate = new Date(med.startDate);
         startDate.setHours(0, 0, 0, 0);
-        const endDate = new Date(med.endDate);
-        endDate.setHours(23, 59, 59, 999);
         const target = new Date(date);
         target.setHours(12, 0, 0, 0);
-        return target >= startDate && target <= endDate;
+        if (target < startDate) return false;
+        if (!med.endDate) return true;
+        const endDate = new Date(med.endDate);
+        endDate.setHours(23, 59, 59, 999);
+        return target <= endDate;
       });
     } catch (error) {
       console.error('Error getting active medications:', error);
