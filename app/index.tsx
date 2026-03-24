@@ -99,6 +99,9 @@ export default function HomeScreen() {
             : d
         )
       );
+      // Reload medications to reflect updated stock
+      const activeMeds = await StorageService.getActiveMedicationsForDate(today);
+      setMedications(activeMeds);
     } catch (error) {
       Alert.alert('Error', 'Failed to update dose status');
     }
@@ -189,6 +192,17 @@ export default function HomeScreen() {
                 <View style={styles.medicationInfo}>
                   <Text style={styles.medicationName}>{med.name}</Text>
                   <Text style={styles.medicationDetails}>{med.dosage} • {med.times.length} times daily</Text>
+                  {med.stock != null && (
+                    <Text style={[
+                      styles.medicationDetails,
+                      { fontWeight: '600' },
+                      med.minStock != null && med.stock <= med.minStock
+                        ? { color: colors.danger }
+                        : {}
+                    ]}>
+                      Stock: {med.stock} units{med.minStock != null && med.stock <= med.minStock ? ' ⚠️' : ''}
+                    </Text>
+                  )}
                   <Text style={styles.medicationDates}>
                     {new Date(med.startDate).toLocaleDateString()} - {new Date(med.endDate).toLocaleDateString()}
                   </Text>

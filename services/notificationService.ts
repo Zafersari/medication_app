@@ -96,6 +96,25 @@ export class NotificationService {
   }
 
   /**
+   * Send a low stock notification
+   */
+  static async scheduleLowStockNotification(medicationName: string, remainingStock: number): Promise<void> {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '⚠️ Low Stock Warning',
+          body: `Your ${medicationName} is running low (Remaining: ${remainingStock}). Please refill.`,
+          sound: true,
+          priority: Notifications.AndroidNotificationPriority.HIGH,
+        },
+        trigger: null, // Immediate notification
+      });
+    } catch (error) {
+      console.error('Error sending low stock notification:', error);
+    }
+  }
+
+  /**
    * Cancel all notifications for a specific medication
    */
   static async cancelMedicationNotifications(medicationId: string): Promise<void> {

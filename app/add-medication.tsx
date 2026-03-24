@@ -30,6 +30,8 @@ export default function AddMedicationScreen() {
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [pendingTime, setPendingTime] = useState(new Date());
+  const [stock, setStock] = useState('');
+  const [minStock, setMinStock] = useState('');
 
   const formatTime = (date: Date): string => {
     const hours = date.getHours().toString().padStart(2, '0');
@@ -76,6 +78,8 @@ export default function AddMedicationScreen() {
         endDate: endDate.toISOString(),
         times,
         createdAt: new Date().toISOString(),
+        ...(stock.trim() ? { stock: parseInt(stock.trim(), 10) } : {}),
+        ...(minStock.trim() ? { minStock: parseInt(minStock.trim(), 10) } : {}),
       };
       await StorageService.saveMedication(medication);
       const hasPermission = await NotificationService.requestPermissions();
@@ -101,6 +105,16 @@ export default function AddMedicationScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Dosage</Text>
           <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder="e.g., 2 pills, 500mg" placeholderTextColor={colors.textMuted} />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Total Stock (Units)</Text>
+          <TextInput style={styles.input} value={stock} onChangeText={setStock} placeholder="e.g., 30" placeholderTextColor={colors.textMuted} keyboardType="numeric" />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Low Stock Warning Threshold</Text>
+          <TextInput style={styles.input} value={minStock} onChangeText={setMinStock} placeholder="e.g., 5" placeholderTextColor={colors.textMuted} keyboardType="numeric" />
         </View>
 
         <View style={styles.inputGroup}>

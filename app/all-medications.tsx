@@ -120,6 +120,17 @@ export default function AllMedicationsScreen() {
               <View style={styles.medicationInfo}>
                 <Text style={styles.medicationName}>{med.name}</Text>
                 <Text style={styles.medicationDosage}>{med.dosage}</Text>
+                {med.stock != null && (
+                  <Text style={[
+                    styles.medicationDates,
+                    { fontWeight: '600' },
+                    med.minStock != null && med.stock <= med.minStock
+                      ? { color: colors.danger }
+                      : {}
+                  ]}>
+                    Stock: {med.stock} units{med.minStock != null && med.stock <= med.minStock ? ' ⚠️' : ''}
+                  </Text>
+                )}
                 <Text style={styles.medicationDates}>{formatDate(med.startDate)} — {formatDate(med.endDate)}</Text>
                 <View style={styles.timesRow}>
                   {med.times.map((time, index) => (

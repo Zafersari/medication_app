@@ -31,6 +31,8 @@ export default function EditMedicationScreen() {
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [pendingTime, setPendingTime] = useState(new Date());
+  const [stock, setStock] = useState('');
+  const [minStock, setMinStock] = useState('');
   const [originalMedication, setOriginalMedication] = useState<Medication | null>(null);
 
   useEffect(() => { if (id) loadMedication(id); }, [id]);
@@ -44,6 +46,8 @@ export default function EditMedicationScreen() {
       setStartDate(new Date(med.startDate));
       setEndDate(new Date(med.endDate));
       setTimes(med.times);
+      setStock(med.stock != null ? med.stock.toString() : '');
+      setMinStock(med.minStock != null ? med.minStock.toString() : '');
     } else {
       Alert.alert('Error', 'Medication not found');
       router.back();
@@ -95,6 +99,8 @@ export default function EditMedicationScreen() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         times,
+        stock: stock.trim() ? parseInt(stock.trim(), 10) : undefined,
+        minStock: minStock.trim() ? parseInt(minStock.trim(), 10) : undefined,
       };
       await StorageService.updateMedication(updated);
       await NotificationService.cancelMedicationNotifications(updated.id);
@@ -120,6 +126,16 @@ export default function EditMedicationScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Dosage</Text>
           <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder="e.g., 2 pills, 500mg" placeholderTextColor={colors.textMuted} />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Total Stock (Units)</Text>
+          <TextInput style={styles.input} value={stock} onChangeText={setStock} placeholder="e.g., 30" placeholderTextColor={colors.textMuted} keyboardType="numeric" />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Low Stock Warning Threshold</Text>
+          <TextInput style={styles.input} value={minStock} onChangeText={setMinStock} placeholder="e.g., 5" placeholderTextColor={colors.textMuted} keyboardType="numeric" />
         </View>
 
         <View style={styles.inputGroup}>

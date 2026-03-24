@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Medication, MedicationDose } from '../types/medication';
+import { NotificationService } from './notificationService';
 
 const MEDICATIONS_KEY = '@medications';
 const DOSES_KEY = '@doses';
@@ -125,6 +126,18 @@ export class StorageService {
       }
 
       await AsyncStorage.setItem(key, JSON.stringify(doses));
+
+      // Decrease stock when marking as taken (not when unmarking)
+      if (taken) {
+        const medication = await this.getMedicationById(medicationId);
+        if (medication && medication.stock != null) {
+          const newStock = Math.max(0, medication.stock - 1);
+          await this.updateMedication({ ...medication, stock: newStock });
+          if (medication.minStock != null && newStock <= medication.minStock) {
+            await NotificationService.scheduleLowStockNotification(medication.name, newStock);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error marking dose as taken:', error);
       throw error;

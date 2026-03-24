@@ -6,6 +6,8 @@ export interface Medication {
   endDate: string; // ISO date string
   times: string[]; // Array of times in HH:MM format
   createdAt: string;
+  stock?: number; // Current stock quantity (e.g. 30)
+  minStock?: number; // Minimum stock threshold for low-stock warning (e.g. 5)
 }
 
 export interface MedicationDose {
