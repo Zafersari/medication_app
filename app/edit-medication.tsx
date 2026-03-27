@@ -17,6 +17,8 @@ import { StorageService } from '../services/storageService';
 import { NotificationService } from '../services/notificationService';
 import { useTheme } from '../contexts/ThemeContext';
 import { makeStyles } from '../styles/medicationFormStyles';
+import MedicationAutocomplete from '../components/MedicationAutocomplete';
+import { MedicationInfo, searchMedications } from '../data/medications';
 
 export default function EditMedicationScreen() {
   const router = useRouter();
@@ -40,6 +42,7 @@ export default function EditMedicationScreen() {
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('');
   const [originalMedication, setOriginalMedication] = useState<Medication | null>(null);
+  const [selectedMedInfo, setSelectedMedInfo] = useState<MedicationInfo | null>(null);
 
   useEffect(() => { if (id) loadMedication(id); }, [id]);
 
@@ -56,6 +59,12 @@ export default function EditMedicationScreen() {
       setTimes(med.times);
       setStock(med.stock != null ? med.stock.toString() : '');
       setMinStock(med.minStock != null ? med.minStock.toString() : '');
+
+      // Try to match existing medication name to database for dosage chips
+      const matches = searchMedications(med.name, 1);
+      if (matches.length > 0 && matches[0].name.toLowerCase() === med.name.toLowerCase()) {
+        setSelectedMedInfo(matches[0]);
+      }
     } else {
       Alert.alert('Error', 'Medication not found');
       router.back();
@@ -90,6 +99,13 @@ export default function EditMedicationScreen() {
   const confirmStartDate = () => { setStartDate(pendingStartDate); setShowStartPicker(false); };
   const openEndPicker = () => { setPendingEndDate(endDate); setShowEndPicker(true); };
   const confirmEndDate = () => { setEndDate(pendingEndDate); setShowEndPicker(false); };
+
+  const handleMedicationSelected = (medInfo: MedicationInfo) => {
+    setSelectedMedInfo(medInfo);
+    if (!dosage.trim() && medInfo.commonDosages.length > 0) {
+      setDosage(medInfo.commonDosages[0]);
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) { Alert.alert('Error', 'Please enter medication name'); return; }
@@ -174,18 +190,85 @@ export default function EditMedicationScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.content}>
         <Text style={styles.title}>Edit Medication</Text>
 
-        <View style={styles.inputGroup}>
+        {/* Medication Name with Autocomplete */}
+        <View style={[styles.inputGroup, { zIndex: 100 }]}>
           <Text style={styles.label}>Medication Name</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="e.g., Amoxicillin" placeholderTextColor={colors.textMuted} />
+          <MedicationAutocomplete
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              if (selectedMedInfo && text !== selectedMedInfo.name) {
+                setSelectedMedInfo(null);
+              }
+            }}
+            onSelectMedication={handleMedicationSelected}
+            placeholder="e.g., Amoxicillin"
+            colors={colors}
+          />
+          {selectedMedInfo && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: 8,
+              gap: 6,
+              flexWrap: 'wrap',
+            }}>
+              <View style={{
+                backgroundColor: colors.primary + '18',
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>
+                  {selectedMedInfo.form}
+                </Text>
+              </View>
+              <View style={{
+                backgroundColor: colors.success + '18',
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 12, color: colors.success, fontWeight: '600' }}>
+                  {selectedMedInfo.category}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
+        {/* Dosage with quick-pick chips */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Dosage</Text>
           <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder="e.g., 2 pills, 500mg" placeholderTextColor={colors.textMuted} />
+          {selectedMedInfo && selectedMedInfo.commonDosages.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+              {selectedMedInfo.commonDosages.map((d) => (
+                <TouchableOpacity
+                  key={d}
+                  onPress={() => setDosage(d)}
+                  style={{
+                    backgroundColor: dosage === d ? colors.primary : colors.chipBg,
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 16,
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 13,
+                    fontWeight: '600',
+                    color: dosage === d ? '#fff' : colors.text,
+                  }}>
+                    {d}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         <View style={styles.inputGroup}>

@@ -17,6 +17,8 @@ import { StorageService } from '../services/storageService';
 import { NotificationService } from '../services/notificationService';
 import { useTheme } from '../contexts/ThemeContext';
 import { makeStyles } from '../styles/medicationFormStyles';
+import MedicationAutocomplete from '../components/MedicationAutocomplete';
+import { MedicationInfo } from '../data/medications';
 
 export default function AddMedicationScreen() {
   const router = useRouter();
@@ -38,6 +40,7 @@ export default function AddMedicationScreen() {
   const [isAsNeeded, setIsAsNeeded] = useState(false);
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('');
+  const [selectedMedInfo, setSelectedMedInfo] = useState<MedicationInfo | null>(null);
 
   const formatTime = (date: Date): string => {
     const hours = date.getHours().toString().padStart(2, '0');
@@ -67,6 +70,14 @@ export default function AddMedicationScreen() {
   const confirmStartDate = () => { setStartDate(pendingStartDate); setShowStartPicker(false); };
   const openEndPicker = () => { setPendingEndDate(endDate); setShowEndPicker(true); };
   const confirmEndDate = () => { setEndDate(pendingEndDate); setShowEndPicker(false); };
+
+  const handleMedicationSelected = (medInfo: MedicationInfo) => {
+    setSelectedMedInfo(medInfo);
+    // If dosage is empty, suggest the first common dosage
+    if (!dosage.trim() && medInfo.commonDosages.length > 0) {
+      setDosage(medInfo.commonDosages[0]);
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) { Alert.alert('Error', 'Please enter medication name'); return; }
@@ -151,18 +162,86 @@ export default function AddMedicationScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.content}>
         <Text style={styles.title}>Add Medication</Text>
 
-        <View style={styles.inputGroup}>
+        {/* Medication Name with Autocomplete */}
+        <View style={[styles.inputGroup, { zIndex: 100 }]}>
           <Text style={styles.label}>Medication Name</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="e.g., Amoxicillin" placeholderTextColor={colors.textMuted} />
+          <MedicationAutocomplete
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              // Clear selected info if user changes the name manually
+              if (selectedMedInfo && text !== selectedMedInfo.name) {
+                setSelectedMedInfo(null);
+              }
+            }}
+            onSelectMedication={handleMedicationSelected}
+            placeholder="e.g., Amoxicillin"
+            colors={colors}
+          />
+          {selectedMedInfo && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: 8,
+              gap: 6,
+              flexWrap: 'wrap',
+            }}>
+              <View style={{
+                backgroundColor: colors.primary + '18',
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>
+                  {selectedMedInfo.form}
+                </Text>
+              </View>
+              <View style={{
+                backgroundColor: colors.success + '18',
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 12, color: colors.success, fontWeight: '600' }}>
+                  {selectedMedInfo.category}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
+        {/* Dosage — with quick-pick chips if a medication is selected */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Dosage</Text>
           <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder="e.g., 2 pills, 500mg" placeholderTextColor={colors.textMuted} />
+          {selectedMedInfo && selectedMedInfo.commonDosages.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+              {selectedMedInfo.commonDosages.map((d) => (
+                <TouchableOpacity
+                  key={d}
+                  onPress={() => setDosage(d)}
+                  style={{
+                    backgroundColor: dosage === d ? colors.primary : colors.chipBg,
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 16,
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 13,
+                    fontWeight: '600',
+                    color: dosage === d ? '#fff' : colors.text,
+                  }}>
+                    {d}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         <View style={styles.inputGroup}>
