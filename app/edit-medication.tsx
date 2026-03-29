@@ -16,14 +16,16 @@ import { Medication } from '../types/medication';
 import { StorageService } from '../services/storageService';
 import { NotificationService } from '../services/notificationService';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { tr } from '../utils/i18n';
 import { makeStyles } from '../styles/medicationFormStyles';
 import MedicationAutocomplete from '../components/MedicationAutocomplete';
-import { MedicationInfo, searchMedications } from '../data/medications';
 
 export default function EditMedicationScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, isDark } = useTheme();
+  const { lang } = useLanguage();
   const styles = makeStyles(colors);
 
   const [name, setName] = useState('');
@@ -42,7 +44,6 @@ export default function EditMedicationScreen() {
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('');
   const [originalMedication, setOriginalMedication] = useState<Medication | null>(null);
-  const [selectedMedInfo, setSelectedMedInfo] = useState<MedicationInfo | null>(null);
 
   useEffect(() => { if (id) loadMedication(id); }, [id]);
 
@@ -59,14 +60,8 @@ export default function EditMedicationScreen() {
       setTimes(med.times);
       setStock(med.stock != null ? med.stock.toString() : '');
       setMinStock(med.minStock != null ? med.minStock.toString() : '');
-
-      // Try to match existing medication name to database for dosage chips
-      const matches = searchMedications(med.name, 1);
-      if (matches.length > 0 && matches[0].name.toLowerCase() === med.name.toLowerCase()) {
-        setSelectedMedInfo(matches[0]);
-      }
     } else {
-      Alert.alert('Error', 'Medication not found');
+      Alert.alert(tr('error', lang), tr('medication_not_found', lang));
       router.back();
     }
   };
@@ -78,7 +73,10 @@ export default function EditMedicationScreen() {
   };
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(
+      lang === 'tr' ? 'tr-TR' : lang === 'de' ? 'de-DE' : 'en-US',
+      { year: 'numeric', month: 'short', day: 'numeric' }
+    );
   };
 
   const handleAddTime = () => { setPendingTime(new Date()); setShowTimePicker(true); };
@@ -100,18 +98,11 @@ export default function EditMedicationScreen() {
   const openEndPicker = () => { setPendingEndDate(endDate); setShowEndPicker(true); };
   const confirmEndDate = () => { setEndDate(pendingEndDate); setShowEndPicker(false); };
 
-  const handleMedicationSelected = (medInfo: MedicationInfo) => {
-    setSelectedMedInfo(medInfo);
-    if (!dosage.trim() && medInfo.commonDosages.length > 0) {
-      setDosage(medInfo.commonDosages[0]);
-    }
-  };
-
   const handleSave = async () => {
-    if (!name.trim()) { Alert.alert('Error', 'Please enter medication name'); return; }
-    if (!dosage.trim()) { Alert.alert('Error', 'Please enter dosage'); return; }
-    if (!isAsNeeded && times.length === 0) { Alert.alert('Error', 'Please add at least one time'); return; }
-    if (!isOngoing && endDate < startDate) { Alert.alert('Error', 'End date must be after start date'); return; }
+    if (!name.trim()) { Alert.alert(tr('error', lang), tr('enter_name', lang)); return; }
+    if (!dosage.trim()) { Alert.alert(tr('error', lang), tr('enter_dosage', lang)); return; }
+    if (!isAsNeeded && times.length === 0) { Alert.alert(tr('error', lang), tr('add_one_time', lang)); return; }
+    if (!isOngoing && endDate < startDate) { Alert.alert(tr('error', lang), tr('end_after_start', lang)); return; }
     if (!originalMedication) return;
 
     try {
@@ -130,9 +121,9 @@ export default function EditMedicationScreen() {
       await NotificationService.cancelMedicationNotifications(updated.id);
       const hasPermission = await NotificationService.requestPermissions();
       if (hasPermission) await NotificationService.scheduleMedicationNotifications(updated);
-      Alert.alert('Success', 'Medication updated successfully', [{ text: 'OK', onPress: () => router.back() }]);
+      Alert.alert(tr('success', lang), tr('medication_updated', lang), [{ text: tr('ok', lang), onPress: () => router.back() }]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update medication');
+      Alert.alert(tr('error', lang), tr('update_failed', lang));
       console.error(error);
     }
   };
@@ -177,10 +168,10 @@ export default function EditMedicationScreen() {
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity onPress={onCancel} style={styles.modalButtonCancel}>
-                <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+                <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>{tr('cancel', lang)}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={onConfirm} style={styles.modalButtonConfirm}>
-                <Text style={[styles.modalButtonText, { color: colors.primary, fontWeight: '600' }]}>Confirm</Text>
+                <Text style={[styles.modalButtonText, { color: colors.primary, fontWeight: '600' }]}>{tr('confirm', lang)}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -192,97 +183,35 @@ export default function EditMedicationScreen() {
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.content}>
-        <Text style={styles.title}>Edit Medication</Text>
+        <Text style={styles.title}>{tr('edit_medication', lang)}</Text>
 
-        {/* Medication Name with Autocomplete */}
         <View style={[styles.inputGroup, { zIndex: 100 }]}>
-          <Text style={styles.label}>Medication Name</Text>
+          <Text style={styles.label}>{tr('medication_name', lang)}</Text>
           <MedicationAutocomplete
             value={name}
-            onChangeText={(text) => {
-              setName(text);
-              if (selectedMedInfo && text !== selectedMedInfo.name) {
-                setSelectedMedInfo(null);
-              }
-            }}
-            onSelectMedication={handleMedicationSelected}
-            placeholder="e.g., Amoxicillin"
+            onChangeText={setName}
+            placeholder={tr('medication_name_placeholder', lang)}
             colors={colors}
           />
-          {selectedMedInfo && (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: 8,
-              gap: 6,
-              flexWrap: 'wrap',
-            }}>
-              <View style={{
-                backgroundColor: colors.primary + '18',
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 8,
-              }}>
-                <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>
-                  {selectedMedInfo.form}
-                </Text>
-              </View>
-              <View style={{
-                backgroundColor: colors.success + '18',
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 8,
-              }}>
-                <Text style={{ fontSize: 12, color: colors.success, fontWeight: '600' }}>
-                  {selectedMedInfo.category}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-
-        {/* Dosage with quick-pick chips */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Dosage</Text>
-          <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder="e.g., 2 pills, 500mg" placeholderTextColor={colors.textMuted} />
-          {selectedMedInfo && selectedMedInfo.commonDosages.length > 0 && (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-              {selectedMedInfo.commonDosages.map((d) => (
-                <TouchableOpacity
-                  key={d}
-                  onPress={() => setDosage(d)}
-                  style={{
-                    backgroundColor: dosage === d ? colors.primary : colors.chipBg,
-                    paddingHorizontal: 14,
-                    paddingVertical: 6,
-                    borderRadius: 16,
-                  }}
-                >
-                  <Text style={{
-                    fontSize: 13,
-                    fontWeight: '600',
-                    color: dosage === d ? '#fff' : colors.text,
-                  }}>
-                    {d}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Total Stock (Units)</Text>
-          <TextInput style={styles.input} value={stock} onChangeText={setStock} placeholder="e.g., 30" placeholderTextColor={colors.textMuted} keyboardType="numeric" />
+          <Text style={styles.label}>{tr('dosage', lang)}</Text>
+          <TextInput style={styles.input} value={dosage} onChangeText={setDosage} placeholder={tr('dosage_placeholder', lang)} placeholderTextColor={colors.textMuted} />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Low Stock Warning Threshold</Text>
-          <TextInput style={styles.input} value={minStock} onChangeText={setMinStock} placeholder="e.g., 5" placeholderTextColor={colors.textMuted} keyboardType="numeric" />
+          <Text style={styles.label}>{tr('total_stock', lang)}</Text>
+          <TextInput style={styles.input} value={stock} onChangeText={setStock} placeholder={tr('eg_30', lang)} placeholderTextColor={colors.textMuted} keyboardType="numeric" />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Start Date</Text>
+          <Text style={styles.label}>{tr('low_stock_threshold', lang)}</Text>
+          <TextInput style={styles.input} value={minStock} onChangeText={setMinStock} placeholder={tr('eg_5', lang)} placeholderTextColor={colors.textMuted} keyboardType="numeric" />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{tr('start_date', lang)}</Text>
           <TouchableOpacity style={styles.dateButton} onPress={openStartPicker}>
             <Text style={styles.dateButtonText}>{formatDate(startDate)}</Text>
           </TouchableOpacity>
@@ -297,14 +226,14 @@ export default function EditMedicationScreen() {
 
         <View style={styles.inputGroup}>
           <View style={styles.switchRow}>
-            <Text style={styles.label}>Ongoing medication (No end date)</Text>
+            <Text style={styles.label}>{tr('ongoing_medication', lang)}</Text>
             <Switch value={isOngoing} onValueChange={setIsOngoing} trackColor={{ false: colors.borderLight, true: colors.primary }} />
           </View>
         </View>
 
         {!isOngoing && (
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>End Date</Text>
+            <Text style={styles.label}>{tr('end_date', lang)}</Text>
             <TouchableOpacity style={styles.dateButton} onPress={openEndPicker}>
               <Text style={styles.dateButtonText}>{formatDate(endDate)}</Text>
             </TouchableOpacity>
@@ -321,16 +250,16 @@ export default function EditMedicationScreen() {
 
         <View style={styles.inputGroup}>
           <View style={styles.switchRow}>
-            <Text style={styles.label}>Any time / As needed</Text>
+            <Text style={styles.label}>{tr('any_time', lang)}</Text>
             <Switch value={isAsNeeded} onValueChange={setIsAsNeeded} trackColor={{ false: colors.borderLight, true: colors.primary }} />
           </View>
         </View>
 
         {!isAsNeeded && (
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Daily Times</Text>
+            <Text style={styles.label}>{tr('daily_times', lang)}</Text>
             <TouchableOpacity style={styles.addTimeButton} onPress={handleAddTime}>
-              <Text style={styles.addTimeButtonText}>+ Add Time</Text>
+              <Text style={styles.addTimeButtonText}>{tr('add_time', lang)}</Text>
             </TouchableOpacity>
             {times.map((time, index) => (
               <View key={index} style={styles.timeChip}>
@@ -343,7 +272,6 @@ export default function EditMedicationScreen() {
           </View>
         )}
 
-        {/* Time Picker Modal */}
         {Platform.OS === 'android' && showTimePicker && (
           <DateTimePicker
             value={pendingTime}
@@ -371,10 +299,10 @@ export default function EditMedicationScreen() {
                 />
                 <View style={styles.modalButtons}>
                   <TouchableOpacity onPress={() => setShowTimePicker(false)} style={styles.modalButtonCancel}>
-                    <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+                    <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>{tr('cancel', lang)}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={confirmTime} style={styles.modalButtonConfirm}>
-                    <Text style={[styles.modalButtonText, { color: colors.primary, fontWeight: '600' }]}>Add</Text>
+                    <Text style={[styles.modalButtonText, { color: colors.primary, fontWeight: '600' }]}>{tr('add', lang)}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -384,10 +312,10 @@ export default function EditMedicationScreen() {
 
         <View style={styles.buttonGroup}>
           <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.cancelButtonText}>{tr('cancel', lang)}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.saveButtonBlue} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <Text style={styles.saveButtonText}>{tr('save_changes', lang)}</Text>
           </TouchableOpacity>
         </View>
       </View>

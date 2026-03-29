@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { NotificationService } from '../services/notificationService';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
+import { LanguageProvider } from '../contexts/LanguageContext';
 
 function StackLayout() {
   const { colors } = useTheme();
@@ -29,7 +30,9 @@ function StackLayout() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <StackLayout />
+      <LanguageProvider>
+        <StackLayout />
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

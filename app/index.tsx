@@ -15,11 +15,15 @@ import { Medication, MedicationDose } from '../types/medication';
 import { StorageService } from '../services/storageService';
 import { NotificationService } from '../services/notificationService';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { tr, LANGUAGES } from '../utils/i18n';
 import { makeStyles, DRAWER_WIDTH } from '../styles/homeStyles';
+import { MedicationProgress } from '../components/MedicationProgress';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { colors, isDark, setMode } = useTheme();
+  const { lang, setLanguage } = useLanguage();
   const styles = makeStyles(colors);
 
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -56,13 +60,13 @@ export default function HomeScreen() {
       for (const med of activeMeds) {
         if (med.isAsNeeded) {
           const existingDose = todayDoses.find(
-            (d) => d.medicationId === med.id && d.time === 'Any Time'
+            (d) => d.medicationId === med.id && d.time === tr('any_time_label', lang)
           );
           allDoses.push(existingDose || {
             medicationId: med.id,
             medicationName: med.name,
             dosage: med.dosage,
-            time: 'Any Time',
+            time: tr('any_time_label', lang),
             date: today,
             taken: false,
           });
@@ -96,7 +100,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  useFocusEffect(useCallback(() => { loadData(); }, []));
+  useFocusEffect(useCallback(() => { loadData(); }, [lang]));
 
   const toggleDose = async (dose: MedicationDose) => {
     try {
@@ -109,11 +113,10 @@ export default function HomeScreen() {
             : d
         )
       );
-      // Reload medications to reflect updated stock
       const activeMeds = await StorageService.getActiveMedicationsForDate(today);
       setMedications(activeMeds);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update dose status');
+      Alert.alert(tr('error', lang), tr('failed_update_dose', lang));
     }
   };
 
@@ -128,7 +131,7 @@ export default function HomeScreen() {
   };
 
   const isUpcoming = (time: string): boolean => {
-    if (time === 'Any Time') return false;
+    if (time === tr('any_time_label', lang)) return false;
     const now = new Date();
     const [hours, minutes] = time.split(':').map(Number);
     const doseTime = new Date();
@@ -139,26 +142,39 @@ export default function HomeScreen() {
   const completedCount = doses.filter((d) => d.taken).length;
   const totalCount = doses.length;
 
+  // Weekday & date for drawer header
+  const todayDate = new Date();
+  const weekday = todayDate.toLocaleDateString(
+    lang === 'tr' ? 'tr-TR' : lang === 'de' ? 'de-DE' : 'en-US',
+    { weekday: 'long' }
+  );
+  const fullDate = todayDate.toLocaleDateString(
+    lang === 'tr' ? 'tr-TR' : lang === 'de' ? 'de-DE' : 'en-US',
+    { month: 'long', day: 'numeric', year: 'numeric' }
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={openDrawer} style={styles.menuButton}>
           <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Today</Text>
+        <Text style={styles.headerTitle}>{tr('today', lang)}</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.allButton} onPress={() => router.push('/all-medications')}>
-            <Text style={styles.allButtonText}>All</Text>
+            <Text style={styles.allButtonText}>{tr('all', lang)}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.addButton} onPress={() => router.push('/add-medication')}>
-            <Text style={styles.addButtonText}>+ Add</Text>
+            <Text style={styles.addButtonText}>{tr('add', lang)}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {totalCount > 0 && (
         <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>{completedCount} of {totalCount} doses taken</Text>
+          <Text style={styles.progressText}>
+            {tr('doses_taken_of', lang, completedCount, totalCount)}
+          </Text>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${(completedCount / totalCount) * 100}%` }]} />
           </View>
@@ -169,8 +185,8 @@ export default function HomeScreen() {
         {doses.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>💊</Text>
-            <Text style={styles.emptyTitle}>No medications for today</Text>
-            <Text style={styles.emptyText}>Tap the + Add button to add your first medication</Text>
+            <Text style={styles.emptyTitle}>{tr('no_medications_today', lang)}</Text>
+            <Text style={styles.emptyText}>{tr('add_first_medication', lang)}</Text>
           </View>
         ) : (
           doses.map((dose, index) => (
@@ -197,12 +213,14 @@ export default function HomeScreen() {
 
         {medications.length > 0 && (
           <View style={styles.medicationsSection}>
-            <Text style={styles.sectionTitle}>Active Medications</Text>
+            <Text style={styles.sectionTitle}>{tr('active_medications', lang)}</Text>
             {medications.map((med) => (
               <View key={med.id} style={styles.medicationCard}>
                 <View style={styles.medicationInfo}>
                   <Text style={styles.medicationName}>{med.name}</Text>
-                  <Text style={styles.medicationDetails}>{med.dosage} • {med.isAsNeeded ? 'As needed' : `${med.times.length} times daily`}</Text>
+                  <Text style={styles.medicationDetails}>
+                    {med.dosage} • {med.isAsNeeded ? tr('as_needed', lang) : tr('times_daily', lang, med.times.length)}
+                  </Text>
                   {med.stock != null && (
                     <Text style={[
                       styles.medicationDetails,
@@ -211,15 +229,16 @@ export default function HomeScreen() {
                         ? { color: colors.danger }
                         : {}
                     ]}>
-                      Stock: {med.stock} units{med.minStock != null && med.stock <= med.minStock ? ' ⚠️' : ''}
+                      {tr('stock', lang)}: {med.stock} {tr('units', lang)}{med.minStock != null && med.stock <= med.minStock ? ' ⚠️' : ''}
                     </Text>
                   )}
                   <Text style={styles.medicationDates}>
-                    {new Date(med.startDate).toLocaleDateString()} - {med.endDate ? new Date(med.endDate).toLocaleDateString() : 'Ongoing'}
+                    {new Date(med.startDate).toLocaleDateString()} - {med.endDate ? new Date(med.endDate).toLocaleDateString() : tr('ongoing', lang)}
                   </Text>
+                  <MedicationProgress medication={med} />
                 </View>
                 <TouchableOpacity onPress={() => router.push(`/edit-medication?id=${med.id}`)} style={styles.editButton}>
-                  <Text style={styles.editButtonText}>Edit</Text>
+                  <Text style={styles.editButtonText}>{tr('edit', lang)}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -238,36 +257,70 @@ export default function HomeScreen() {
         <Animated.View style={[styles.drawer, { transform: [{ translateX: drawerAnim }] }]}>
           <View style={styles.drawerHeader}>
             <Text style={styles.drawerAppName}>💊 MedTracker</Text>
-            <Text style={styles.drawerDateDay}>{new Date().toLocaleDateString('en-US', { weekday: 'long' })}</Text>
-            <Text style={styles.drawerDateFull}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</Text>
+            <Text style={styles.drawerDateDay}>{weekday}</Text>
+            <Text style={styles.drawerDateFull}>{fullDate}</Text>
             {totalCount > 0 && (
               <View style={styles.drawerStatsRow}>
                 <View style={styles.drawerStatsBadge}>
-                  <Text style={styles.drawerStatsText}>{completedCount}/{totalCount} doses today</Text>
+                  <Text style={styles.drawerStatsText}>
+                    {tr('doses_today', lang, completedCount, totalCount)}
+                  </Text>
                 </View>
               </View>
             )}
           </View>
           <ScrollView style={styles.drawerBody}>
-            <Text style={styles.drawerSectionLabel}>NAVIGATION</Text>
+            <Text style={styles.drawerSectionLabel}>{tr('navigation', lang)}</Text>
             <TouchableOpacity style={styles.drawerItem} onPress={() => navigateTo('/calendar')}>
               <Text style={styles.drawerItemIcon}>📅</Text>
-              <Text style={styles.drawerItemText}>Calendar</Text>
+              <Text style={styles.drawerItemText}>{tr('calendar', lang)}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.drawerItem} onPress={() => navigateTo('/all-medications')}>
               <Text style={styles.drawerItemIcon}>💊</Text>
-              <Text style={styles.drawerItemText}>All Medications</Text>
+              <Text style={styles.drawerItemText}>{tr('all_medications', lang)}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.drawerItem} onPress={() => navigateTo('/add-medication')}>
               <Text style={styles.drawerItemIcon}>➕</Text>
-              <Text style={styles.drawerItemText}>Add Medication</Text>
+              <Text style={styles.drawerItemText}>{tr('add_medication_menu', lang)}</Text>
             </TouchableOpacity>
             <View style={styles.drawerDivider} />
-            <Text style={styles.drawerSectionLabel}>SETTINGS</Text>
+            <Text style={styles.drawerSectionLabel}>{tr('settings', lang)}</Text>
             <TouchableOpacity style={styles.drawerItem} onPress={toggleTheme}>
               <Text style={styles.drawerItemIcon}>{isDark ? '☀️' : '🌙'}</Text>
-              <Text style={styles.drawerItemText}>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</Text>
+              <Text style={styles.drawerItemText}>{isDark ? tr('switch_light', lang) : tr('switch_dark', lang)}</Text>
             </TouchableOpacity>
+
+            {/* ─── Language Picker ─── */}
+            <View style={styles.drawerItem}>
+              <Text style={styles.drawerItemIcon}>🌐</Text>
+              <Text style={styles.drawerItemText}>{tr('language', lang)}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 24, gap: 8, paddingBottom: 12 }}>
+              {LANGUAGES.map((l) => (
+                <TouchableOpacity
+                  key={l.code}
+                  onPress={() => setLanguage(l.code)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 8,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    backgroundColor: lang === l.code ? colors.primary : colors.chipBg,
+                  }}
+                >
+                  <Text style={{ fontSize: 18 }}>{l.flag}</Text>
+                  <Text style={{
+                    fontSize: 11,
+                    marginTop: 2,
+                    fontWeight: '600',
+                    color: lang === l.code ? '#fff' : colors.textSecondary,
+                  }}>
+                    {l.code.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <View style={styles.drawerDivider} />
             <View style={styles.drawerFooter}>
               <Text style={styles.drawerFooterText}>MedTracker v1.0.0</Text>

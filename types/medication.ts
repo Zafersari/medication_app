@@ -9,6 +9,7 @@ export interface Medication {
   createdAt: string;
   stock?: number; // Current stock quantity (e.g. 30)
   minStock?: number; // Minimum stock threshold for low-stock warning (e.g. 5)
+  totalDosesTaken?: number; // Number of doses taken so far (for progress tracking)
 }
 
 export interface MedicationDose {

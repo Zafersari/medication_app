@@ -129,22 +129,38 @@ export class StorageService {
 
       await AsyncStorage.setItem(key, JSON.stringify(doses));
 
-      // Update stock based on the state change
-      if (!previousTakenState && taken) {
-        // Changing from untaken to taken: decrease stock
+      // Update stock and totalDosesTaken based on the state change
+      if (previousTakenState !== taken) {
         const medication = await this.getMedicationById(medicationId);
-        if (medication && medication.stock != null) {
-          const newStock = Math.max(0, medication.stock - 1);
-          await this.updateMedication({ ...medication, stock: newStock });
-          if (medication.minStock != null && newStock <= medication.minStock) {
-            await NotificationService.scheduleLowStockNotification(medication.name, newStock);
+        if (medication) {
+          let updatedMed = { ...medication };
+          let needsUpdate = false;
+
+          if (!previousTakenState && taken) {
+            // Changing from untaken to taken: decrease stock, increase totalDosesTaken
+            if (updatedMed.stock != null) {
+              const newStock = Math.max(0, updatedMed.stock - 1);
+              updatedMed.stock = newStock;
+              needsUpdate = true;
+              if (updatedMed.minStock != null && newStock <= updatedMed.minStock) {
+                await NotificationService.scheduleLowStockNotification(updatedMed.name, newStock);
+              }
+            }
+            updatedMed.totalDosesTaken = (updatedMed.totalDosesTaken || 0) + 1;
+            needsUpdate = true;
+          } else if (previousTakenState && !taken) {
+            // Changing from taken to untaken: restore stock, decrease totalDosesTaken
+            if (updatedMed.stock != null) {
+              updatedMed.stock += 1;
+              needsUpdate = true;
+            }
+            updatedMed.totalDosesTaken = Math.max(0, (updatedMed.totalDosesTaken || 0) - 1);
+            needsUpdate = true;
           }
-        }
-      } else if (previousTakenState && !taken) {
-        // Changing from taken to untaken: restore stock
-        const medication = await this.getMedicationById(medicationId);
-        if (medication && medication.stock != null) {
-          await this.updateMedication({ ...medication, stock: medication.stock + 1 });
+
+          if (needsUpdate) {
+            await this.updateMedication(updatedMed);
+          }
         }
       }
     } catch (error) {

@@ -4,14 +4,14 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Medication, MedicationDose } from '../types/medication';
 import { StorageService } from '../services/storageService';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { tr } from '../utils/i18n';
 import { makeStyles } from '../styles/calendarStyles';
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 export default function CalendarScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { lang } = useLanguage();
   const styles = makeStyles(colors);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -19,6 +19,18 @@ export default function CalendarScreen() {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [selectedDayDoses, setSelectedDayDoses] = useState<MedicationDose[]>([]);
   const [doseDataMap, setDoseDataMap] = useState<Record<string, { total: number; taken: number }>>({});
+
+  const DAYS = [
+    tr('mon', lang), tr('tue', lang), tr('wed', lang),
+    tr('thu', lang), tr('fri', lang), tr('sat', lang), tr('sun', lang),
+  ];
+
+  const MONTHS = [
+    tr('january', lang), tr('february', lang), tr('march', lang),
+    tr('april', lang), tr('may', lang), tr('june', lang),
+    tr('july', lang), tr('august', lang), tr('september', lang),
+    tr('october', lang), tr('november', lang), tr('december', lang),
+  ];
 
   const loadData = async () => {
     try {
@@ -55,7 +67,7 @@ export default function CalendarScreen() {
     setDoseDataMap(map);
   };
 
-  useFocusEffect(useCallback(() => { loadData(); }, [currentMonth]));
+  useFocusEffect(useCallback(() => { loadData(); }, [currentMonth, lang]));
 
   const loadSelectedDay = async (dateStr: string) => {
     setSelectedDate(dateStr);
@@ -73,8 +85,9 @@ export default function CalendarScreen() {
     const allDoses: MedicationDose[] = [];
     for (const med of activeMeds) {
       if (med.isAsNeeded) {
-        const existing = doses.find((d) => d.medicationId === med.id && d.time === 'Any Time');
-        allDoses.push(existing || { medicationId: med.id, medicationName: med.name, dosage: med.dosage, time: 'Any Time', date: dateStr, taken: false });
+        const anyTimeLabel = tr('any_time_label', lang);
+        const existing = doses.find((d) => d.medicationId === med.id && d.time === anyTimeLabel);
+        allDoses.push(existing || { medicationId: med.id, medicationName: med.name, dosage: med.dosage, time: anyTimeLabel, date: dateStr, taken: false });
       } else {
         for (const time of med.times) {
           const existing = doses.find((d) => d.medicationId === med.id && d.time === time);
@@ -122,9 +135,9 @@ export default function CalendarScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>{tr('back', lang)}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Calendar</Text>
+        <Text style={styles.headerTitle}>{tr('calendar', lang)}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -155,9 +168,9 @@ export default function CalendarScreen() {
       </View>
 
       <View style={styles.legend}>
-        <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.success }]} /><Text style={styles.legendText}>All taken</Text></View>
-        <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#FFA500' }]} /><Text style={styles.legendText}>Partial</Text></View>
-        <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.danger }]} /><Text style={styles.legendText}>Missed</Text></View>
+        <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.success }]} /><Text style={styles.legendText}>{tr('all_taken', lang)}</Text></View>
+        <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#FFA500' }]} /><Text style={styles.legendText}>{tr('partial', lang)}</Text></View>
+        <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.danger }]} /><Text style={styles.legendText}>{tr('missed', lang)}</Text></View>
       </View>
 
       <ScrollView style={styles.detailScroll}>
@@ -165,7 +178,10 @@ export default function CalendarScreen() {
           selectedDayDoses.length > 0 ? (
             <>
               <Text style={styles.detailTitle}>
-                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                {new Date(selectedDate + 'T12:00:00').toLocaleDateString(
+                  lang === 'tr' ? 'tr-TR' : lang === 'de' ? 'de-DE' : 'en-US',
+                  { weekday: 'long', month: 'long', day: 'numeric' }
+                )}
               </Text>
               {selectedDayDoses.map((dose, i) => (
                 <View key={i} style={[styles.doseRow, dose.taken && styles.doseRowTaken]}>
@@ -180,8 +196,8 @@ export default function CalendarScreen() {
                 </View>
               ))}
             </>
-          ) : <Text style={styles.noDataText}>No medications for this day</Text>
-        ) : <Text style={styles.noDataText}>Tap a day to see details</Text>}
+          ) : <Text style={styles.noDataText}>{tr('no_medications_day', lang)}</Text>
+        ) : <Text style={styles.noDataText}>{tr('tap_day', lang)}</Text>}
         <View style={{ height: 30 }} />
       </ScrollView>
     </View>
