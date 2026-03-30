@@ -355,6 +355,10 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.drawerDivider} />
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigateTo('/info')}>
+              <Text style={styles.drawerItemIcon}>ℹ️</Text>
+              <Text style={styles.drawerItemText}>{tr('info_and_help', lang)}</Text>
+            </TouchableOpacity>
             <View style={styles.drawerFooter}>
               <Text style={styles.drawerFooterText}>MedTracker v1.0.0</Text>
             </View>

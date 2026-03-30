@@ -24,6 +24,7 @@ function StackLayout() {
       <Stack.Screen name="edit-medication" />
       <Stack.Screen name="all-medications" />
       <Stack.Screen name="calendar" />
+      <Stack.Screen name="info" />
     </Stack>
   );
 }

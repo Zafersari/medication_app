@@ -324,6 +324,107 @@ export const t: Record<string, Record<Language, string>> = {
   completed_percent: { en: '{0}% completed', tr: '%{0} tamamlandı', de: '{0}% abgeschlossen' },
   delete_all: { en: 'Delete All', tr: 'Tümünü Sil', de: 'Alle löschen' },
   delete_all_confirm: { en: 'Are you sure you want to delete all {0} medications?', tr: 'Tüm {0} ilaçları silmek istediğinize emin misiniz?', de: 'Möchten Sie wirklich alle {0} Medikamente löschen?' },
+
+  // Info / About / FAQ Screen
+  info_and_help: { en: 'Info & Help', tr: 'Bilgi & Yardım', de: 'Info & Hilfe' },
+
+  about_title: { en: 'About MedTracker', tr: 'MedTracker Hakkında', de: 'Über MedTracker' },
+  about_description: {
+    en: 'MedTracker is a personal medication tracking app that helps you manage your daily medications, set reminders, and keep track of your adherence. It supports multiple languages and regions so you can find medications available in your location.',
+    tr: 'MedTracker, günlük ilaçlarınızı yönetmenize, hatırlatıcılar ayarlamanıza ve ilaç kullanım düzeninizi takip etmenize yardımcı olan kişisel bir ilaç takip uygulamasıdır. Birden fazla dil ve bölge desteği sayesinde bulunduğunuz lokasyondaki ilaçları kolayca bulabilirsiniz.',
+    de: 'MedTracker ist eine persönliche Medikamenten-Tracking-App, die Ihnen hilft, Ihre täglichen Medikamente zu verwalten, Erinnerungen einzustellen und Ihre Einnahmetreue zu verfolgen. Die App unterstützt mehrere Sprachen und Regionen, damit Sie Medikamente in Ihrer Region finden können.',
+  },
+
+  features_title: { en: 'Features', tr: 'Özellikler', de: 'Funktionen' },
+  feature_1: {
+    en: 'Add and manage your medications with dosage, schedule, and stock tracking',
+    tr: 'Dozaj, zamanlama ve stok takibi ile ilaçlarınızı ekleyin ve yönetin',
+    de: 'Medikamente mit Dosierung, Zeitplan und Bestandsverfolgung hinzufügen und verwalten',
+  },
+  feature_2: {
+    en: 'Get push notifications for each dose so you never miss a medication',
+    tr: 'Her doz için bildirim alarak ilaçlarınızı asla kaçırmayın',
+    de: 'Push-Benachrichtigungen für jede Dosis erhalten, damit Sie nie eine Einnahme verpassen',
+  },
+  feature_3: {
+    en: 'Calendar view to see your medication adherence history at a glance',
+    tr: 'Takvim görünümü ile ilaç kullanım geçmişinizi bir bakışta görün',
+    de: 'Kalenderansicht, um Ihre Einnahmehistorie auf einen Blick zu sehen',
+  },
+  feature_4: {
+    en: 'Region-based medication search — find medications available in your country',
+    tr: 'Bölgeye dayalı ilaç arama — ülkenizde bulunan ilaçları bulun',
+    de: 'Regionsbasierte Medikamentensuche — finden Sie Medikamente in Ihrer Region',
+  },
+  feature_5: {
+    en: 'Stock tracking with low-stock warnings so you can refill on time',
+    tr: 'Düşük stok uyarıları ile stok takibi sayesinde zamanında tedarik edin',
+    de: 'Bestandsverfolgung mit Warnungen bei niedrigem Bestand für rechtzeitige Nachbestellung',
+  },
+
+  privacy_title: { en: 'Privacy & Security', tr: 'Gizlilik & Güvenlik', de: 'Datenschutz & Sicherheit' },
+  privacy_description: {
+    en: 'Your privacy is our top priority. MedTracker is designed with a privacy-first approach. All your data is stored exclusively on your device — nothing is sent to any server, cloud, or third party. We do not collect, transmit, or store any of your personal or health information.',
+    tr: 'Gizliliğiniz bizim en önemli önceliğimizdir. MedTracker, gizlilik öncelikli bir yaklaşımla tasarlanmıştır. Tüm verileriniz yalnızca cihazınızda saklanır — hiçbir sunucuya, bulut servisine veya üçüncü tarafa gönderilmez. Kişisel veya sağlık bilgilerinizi toplamıyor, iletmiyor veya saklamıyoruz.',
+    de: 'Ihr Datenschutz hat für uns höchste Priorität. MedTracker wurde mit einem Datenschutz-First-Ansatz entwickelt. Alle Ihre Daten werden ausschließlich auf Ihrem Gerät gespeichert — nichts wird an Server, Cloud-Dienste oder Dritte gesendet. Wir erfassen, übertragen oder speichern keine Ihrer persönlichen oder gesundheitsbezogenen Daten.',
+  },
+
+  faq_title: { en: 'Frequently Asked Questions', tr: 'Sıkça Sorulan Sorular', de: 'Häufig gestellte Fragen' },
+
+  faq_q1: {
+    en: 'Can the app owner or other people see my medication data?',
+    tr: 'Uygulamanın sahibi dahil diğer insanlar ilaç bilgilerimi görebilir mi?',
+    de: 'Können der App-Inhaber oder andere Personen meine Medikamentendaten sehen?',
+  },
+  faq_a1: {
+    en: 'No, absolutely not. All your medication data is stored locally on your device only. MedTracker does not have any server, database, or backend system. The app owner, developers, or any third party have no way to access, view, or retrieve your information. Your data stays on your phone and nowhere else.',
+    tr: 'Hayır, kesinlikle hayır. Tüm ilaç verileriniz yalnızca cihazınızda yerel olarak saklanır. MedTracker\'ın herhangi bir sunucusu, veritabanı veya arka uç sistemi yoktur. Uygulama sahibi, geliştiriciler veya herhangi bir üçüncü taraf, bilgilerinize erişme, görüntüleme veya alma imkânına sahip değildir. Verileriniz telefonunuzda kalır, başka hiçbir yerde bulunmaz.',
+    de: 'Nein, absolut nicht. Alle Ihre Medikamentendaten werden ausschließlich lokal auf Ihrem Gerät gespeichert. MedTracker hat keinen Server, keine Datenbank und kein Backend-System. Der App-Inhaber, Entwickler oder Dritte haben keinerlei Möglichkeit, auf Ihre Informationen zuzugreifen, sie einzusehen oder abzurufen. Ihre Daten bleiben auf Ihrem Telefon und nirgendwo sonst.',
+  },
+
+  faq_q2: {
+    en: 'What happens to my data if I delete the app?',
+    tr: 'Uygulamayı silersem verilerime ne olur?',
+    de: 'Was passiert mit meinen Daten, wenn ich die App lösche?',
+  },
+  faq_a2: {
+    en: 'Since all data is stored locally on your device, deleting the app will permanently erase all your medication data. There is no way to recover it, because no backup exists on any server. We recommend noting down important information before uninstalling.',
+    tr: 'Tüm veriler cihazınızda yerel olarak saklandığından, uygulamayı silmek tüm ilaç verilerinizi kalıcı olarak siler. Hiçbir sunucuda yedek bulunmadığı için verileri kurtarmanın bir yolu yoktur. Uygulamayı kaldırmadan önce önemli bilgilerinizi not almanızı öneririz.',
+    de: 'Da alle Daten lokal auf Ihrem Gerät gespeichert sind, werden beim Löschen der App alle Ihre Medikamentendaten dauerhaft gelöscht. Eine Wiederherstellung ist nicht möglich, da kein Backup auf einem Server existiert. Wir empfehlen, wichtige Informationen vor der Deinstallation zu notieren.',
+  },
+
+  faq_q3: {
+    en: 'Does the app use the internet?',
+    tr: 'Uygulama internet kullanıyor mu?',
+    de: 'Nutzt die App das Internet?',
+  },
+  faq_a3: {
+    en: 'MedTracker works fully offline. The only time it uses the internet is when you search for a medication name — it may query a public drug database (OpenFDA) to help you find medications. No personal data is sent during this process; only the medication name you type is used for the search.',
+    tr: 'MedTracker tamamen çevrimdışı çalışır. İnterneti yalnızca ilaç adı ararken kullanır — ilaçları bulmanıza yardımcı olmak için herkese açık bir ilaç veritabanını (OpenFDA) sorgulayabilir. Bu süreçte hiçbir kişisel veri gönderilmez; yalnızca yazdığınız ilaç adı arama için kullanılır.',
+    de: 'MedTracker funktioniert vollständig offline. Das Internet wird nur verwendet, wenn Sie nach einem Medikamentennamen suchen — dabei kann eine öffentliche Arzneimitteldatenbank (OpenFDA) abgefragt werden. Dabei werden keine persönlichen Daten gesendet; nur der eingegebene Medikamentenname wird für die Suche verwendet.',
+  },
+
+  faq_q4: {
+    en: 'Is the medication information in this app medical advice?',
+    tr: 'Bu uygulamadaki ilaç bilgileri tıbbi tavsiye midir?',
+    de: 'Sind die Medikamenteninformationen in dieser App eine medizinische Beratung?',
+  },
+  faq_a4: {
+    en: 'No. MedTracker is a personal tracking tool only. It does not provide medical advice, diagnosis, or treatment recommendations. The medication suggestions during search are for convenience only. Always consult your doctor or pharmacist for medical decisions.',
+    tr: 'Hayır. MedTracker yalnızca kişisel bir takip aracıdır. Tıbbi tavsiye, teşhis veya tedavi önerisi sunmaz. Arama sırasındaki ilaç önerileri yalnızca kolaylık sağlamak içindir. Tıbbi kararlar için her zaman doktorunuza veya eczacınıza danışın.',
+    de: 'Nein. MedTracker ist nur ein persönliches Tracking-Tool. Es bietet keine medizinische Beratung, Diagnose oder Behandlungsempfehlungen. Die Medikamentenvorschläge bei der Suche dienen nur der Bequemlichkeit. Konsultieren Sie immer Ihren Arzt oder Apotheker für medizinische Entscheidungen.',
+  },
+
+  faq_q5: {
+    en: 'How does the location setting affect the app?',
+    tr: 'Lokasyon ayarı uygulamayı nasıl etkiler?',
+    de: 'Wie beeinflusst die Standorteinstellung die App?',
+  },
+  faq_a5: {
+    en: 'The location setting determines which medications appear in search results. Each region has different brand-name medications, so setting your location to your country ensures you see medications that are actually available where you live. This setting does not use GPS — you choose it manually.',
+    tr: 'Lokasyon ayarı, arama sonuçlarında hangi ilaçların görüneceğini belirler. Her bölgenin farklı marka ilaçları olduğundan, lokasyonunuzu ülkenize ayarlamak gerçekten bulunduğunuz yerde mevcut olan ilaçları görmenizi sağlar. Bu ayar GPS kullanmaz — kendiniz manuel olarak seçersiniz.',
+    de: 'Die Standorteinstellung bestimmt, welche Medikamente in den Suchergebnissen erscheinen. Jede Region hat unterschiedliche Markenmedikamente. Wenn Sie Ihren Standort auf Ihr Land einstellen, sehen Sie Medikamente, die tatsächlich verfügbar sind. Diese Einstellung verwendet kein GPS — Sie wählen sie manuell aus.',
+  },
 };
 
 /**
