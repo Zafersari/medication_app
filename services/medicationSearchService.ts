@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MedicationInfo, searchMedications as searchLocal } from '../data/medications';
+import { MedicationInfo, MedicationCountry, searchMedications as searchLocal } from '../data/medications';
 
 const API_CACHE_KEY = '@medication_api_cache';
 const CACHE_EXPIRY_KEY = '@medication_cache_expiry';
@@ -189,41 +189,53 @@ loadCache();
 
 /**
  * Hybrid medication search:
- * 1. Search local database (instant)
+ * 1. Search local database filtered by location (instant)
  * 2. Check memory/disk cache
- * 3. If online, fetch from OpenFDA and merge
+ * 3. If online and location is US, fetch from OpenFDA and merge
  * 4. Return combined & deduplicated results
+ *
+ * @param query - search text
+ * @param limit - max results
+ * @param country - location filter (TR, US, DE). When set, only local meds matching that country are shown.
+ *                  OpenFDA API is only called when country is 'US' (since it's a US-specific API).
  */
 export async function searchMedicationsHybrid(
   query: string,
   limit = 10,
+  country?: MedicationCountry,
 ): Promise<MedicationInfo[]> {
   if (!query || query.trim().length < 2) return [];
 
   const q = query.trim().toLowerCase();
+  const cacheKey = country ? `${q}__${country}` : q;
 
-  // 1) Local results (instant, always available)
-  const localResults = searchLocal(query, limit);
+  // 1) Local results filtered by country (instant, always available)
+  const localResults = searchLocal(query, limit, country);
 
   // 2) Check cache
-  const cached = memoryCache[q];
+  const cached = memoryCache[cacheKey];
   if (cached) {
     return dedup([...localResults, ...cached]).slice(0, limit);
   }
 
-  // 3) Try API (non-blocking, with timeout)
-  try {
-    const apiResults = await searchOpenFDA(query);
+  // 3) Try OpenFDA API only for US location (it's a US drug database)
+  if (!country || country === 'US') {
+    try {
+      const apiResults = await searchOpenFDA(query);
 
-    if (apiResults.length > 0) {
-      // Save to cache
-      memoryCache[q] = apiResults;
-      saveCache(); // fire-and-forget
+      if (apiResults.length > 0) {
+        // Tag API results as US
+        const taggedResults = apiResults.map((r) => ({ ...r, country: 'US' as MedicationCountry }));
 
-      return dedup([...localResults, ...apiResults]).slice(0, limit);
+        // Save to cache
+        memoryCache[cacheKey] = taggedResults;
+        saveCache(); // fire-and-forget
+
+        return dedup([...localResults, ...taggedResults]).slice(0, limit);
+      }
+    } catch {
+      // Offline — just use local
     }
-  } catch {
-    // Offline — just use local
   }
 
   return localResults.slice(0, limit);

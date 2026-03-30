@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { NotificationService } from '../services/notificationService';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
+import { LocationProvider } from '../contexts/LocationContext';
 
 function StackLayout() {
   const { colors } = useTheme();
@@ -31,7 +32,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <StackLayout />
+        <LocationProvider>
+          <StackLayout />
+        </LocationProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

@@ -1,9 +1,16 @@
 export type Language = 'en' | 'tr' | 'de';
+export type LocationCode = 'TR' | 'US' | 'EU';
 
 export const LANGUAGES: { code: Language; label: string; flag: string }[] = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
   { code: 'tr', label: 'Türkçe', flag: '🇹🇷' },
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+];
+
+export const LOCATIONS: { code: LocationCode; label: Record<Language, string>; flag: string }[] = [
+  { code: 'TR', label: { en: 'Turkey', tr: 'Türkiye', de: 'Türkei' }, flag: '🇹🇷' },
+  { code: 'US', label: { en: 'United States', tr: 'ABD', de: 'USA' }, flag: '🇺🇸' },
+  { code: 'EU', label: { en: 'Europe', tr: 'Avrupa', de: 'Europa' }, flag: '🇪🇺' },
 ];
 
 // ─── Medication Categories ──────────────────────────────────────
@@ -254,6 +261,7 @@ export const t: Record<string, Record<Language, string>> = {
   switch_light: { en: 'Switch to Light Mode', tr: 'Açık Tema', de: 'Zum Hellmodus wechseln' },
   switch_dark: { en: 'Switch to Dark Mode', tr: 'Koyu Tema', de: 'Zum Dunkelmodus wechseln' },
   language: { en: 'Language', tr: 'Dil', de: 'Sprache' },
+  location: { en: 'Location', tr: 'Lokasyon', de: 'Standort' },
   doses_today: { en: '{0}/{1} doses today', tr: 'Bugün {0}/{1} doz', de: '{0}/{1} Dosen heute' },
 
   // Days of week

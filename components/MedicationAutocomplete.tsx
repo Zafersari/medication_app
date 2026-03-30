@@ -9,7 +9,7 @@ import {
   Keyboard,
   ActivityIndicator,
 } from 'react-native';
-import { MedicationInfo } from '../data/medications';
+import { MedicationInfo, MedicationCountry } from '../data/medications';
 import { searchMedicationsHybrid } from '../services/medicationSearchService';
 import { ThemeColors } from '../contexts/ThemeContext';
 
@@ -19,6 +19,7 @@ interface MedicationAutocompleteProps {
   onSelectMedication?: (medication: MedicationInfo) => void;
   placeholder?: string;
   colors: ThemeColors;
+  country?: MedicationCountry;
 }
 
 export default function MedicationAutocomplete({
@@ -27,6 +28,7 @@ export default function MedicationAutocomplete({
   onSelectMedication,
   placeholder = 'e.g., Amoxicillin',
   colors,
+  country,
 }: MedicationAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<MedicationInfo[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -48,7 +50,7 @@ export default function MedicationAutocomplete({
     setLoading(true);
 
     try {
-      const results = await searchMedicationsHybrid(text);
+      const results = await searchMedicationsHybrid(text, 10, country);
 
       // Only update if this is still the latest query (avoid stale results)
       if (latestQuery.current === text) {
@@ -62,7 +64,7 @@ export default function MedicationAutocomplete({
         setLoading(false);
       }
     }
-  }, []);
+  }, [country]);
 
   const handleTextChange = useCallback(
     (text: string) => {

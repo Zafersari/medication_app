@@ -17,6 +17,7 @@ import { StorageService } from '../services/storageService';
 import { NotificationService } from '../services/notificationService';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useLocation } from '../contexts/LocationContext';
 import { tr } from '../utils/i18n';
 import { makeStyles } from '../styles/medicationFormStyles';
 import MedicationAutocomplete from '../components/MedicationAutocomplete';
@@ -25,6 +26,7 @@ export default function AddMedicationScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const { lang } = useLanguage();
+  const { location } = useLocation();
   const styles = makeStyles(colors);
 
   const [name, setName] = useState('');
@@ -169,6 +171,7 @@ export default function AddMedicationScreen() {
             onChangeText={setName}
             placeholder={tr('medication_name_placeholder', lang)}
             colors={colors}
+            country={location}
           />
         </View>
 

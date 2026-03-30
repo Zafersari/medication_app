@@ -16,7 +16,8 @@ import { StorageService } from '../services/storageService';
 import { NotificationService } from '../services/notificationService';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { tr, LANGUAGES } from '../utils/i18n';
+import { useLocation } from '../contexts/LocationContext';
+import { tr, LANGUAGES, LOCATIONS } from '../utils/i18n';
 import { makeStyles, DRAWER_WIDTH } from '../styles/homeStyles';
 import { MedicationProgress } from '../components/MedicationProgress';
 
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { colors, isDark, setMode } = useTheme();
   const { lang, setLanguage } = useLanguage();
+  const { location, setLocation } = useLocation();
   const styles = makeStyles(colors);
 
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -316,6 +318,37 @@ export default function HomeScreen() {
                     color: lang === l.code ? '#fff' : colors.textSecondary,
                   }}>
                     {l.code.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* ─── Location Picker ─── */}
+            <View style={styles.drawerItem}>
+              <Text style={styles.drawerItemIcon}>📍</Text>
+              <Text style={styles.drawerItemText}>{tr('location', lang)}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 24, gap: 8, paddingBottom: 12 }}>
+              {LOCATIONS.map((loc) => (
+                <TouchableOpacity
+                  key={loc.code}
+                  onPress={() => setLocation(loc.code)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 8,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    backgroundColor: location === loc.code ? colors.primary : colors.chipBg,
+                  }}
+                >
+                  <Text style={{ fontSize: 18 }}>{loc.flag}</Text>
+                  <Text style={{
+                    fontSize: 11,
+                    marginTop: 2,
+                    fontWeight: '600',
+                    color: location === loc.code ? '#fff' : colors.textSecondary,
+                  }}>
+                    {loc.label[lang]}
                   </Text>
                 </TouchableOpacity>
               ))}
