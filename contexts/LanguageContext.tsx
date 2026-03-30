@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Language } from '../i18n';
+import { Language } from '../utils/i18n';
 
 const LANGUAGE_KEY = 'app_language';
 
@@ -11,7 +11,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType>({
   lang: 'en',
-  setLanguage: () => {},
+  setLanguage: () => { },
 });
 
 export const useLanguage = () => useContext(LanguageContext);
